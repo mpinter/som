@@ -1,0 +1,66 @@
+%load data
+load SOM_data
+
+[n_input,n_data] = size(data);
+
+w_size=4;
+w = rand(w_size,w_size,n_input)*3;
+alpha = 0.1;
+lambda = 0.3;
+
+for ep=1:100
+   data = data(:,randperm(n_data));
+   for j=1:n_data
+       x=data(:,j);
+       min=Inf;
+       minl=47;
+       mink=47;
+       minv=rand(3);
+       for k=1:w_size
+           for l=1:w_size
+               ws=reshape(w(k,l,:),[1,3])';
+               loc_min=norm(x-ws);
+               if loc_min<min
+                  min=loc_min;
+                  minl=l;
+                  mink=k;
+                  minv=x;
+               end
+           end
+       end
+       for k=1:w_size
+           for l=1:w_size
+               wi=reshape(w(k,l,:),[1,3])';            
+               wi=wi+alpha*lambda.^max(abs(k-mink),abs(l-minl))*(minv-wi);
+               
+           end
+       end
+   end 
+   %uprav
+end
+
+
+%zobrazenie
+close all
+plot3(data(1,:),data(2,:),data(3,:),'o')
+grid
+hold on
+
+for i=1:size(w,1)
+        plot3(w(i,:,1),w(i,:,2),w(i,:,3),'r')
+end
+
+for i=1:size(w,2)
+        plot3(w(:,i,1),w(:,i,2),w(:,i,3),'r')
+end
+hold off
+
+
+%komponenty
+figure;
+grid off
+velk = ceil(sqrt(n_input));
+for i=1:n_input
+    subplot(velk,velk,i);
+    imagesc(w(:,:,i),[-10,10])
+end
