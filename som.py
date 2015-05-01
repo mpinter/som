@@ -1,6 +1,9 @@
 import random
 import math
 
+alpha=0.5
+lamb=0.8
+
 w_size=10
 rand_size=100
 
@@ -30,15 +33,16 @@ def dist(p1,p2):
                      (p2[2] - p1[2]) ** 2)    
 
 def omega1(k1,l1,k2,l2,lamb):
-    return lamb^math.max(abs(k2-k1),abs(l2-l1))
+    return pow(lamb,max(abs(k2-k1),abs(l2-l1)))
 
 def omega2(k1,l1,k2,l2,lamb):
     return exp(-1*dist(w[k1][l1],w[k2][l2])^2)/lamb*lamb
 
 randlist(rand_size)
 randnet(w_size)
-for ep in range(100):
-    perm=random.shuffle(list(range(rand_size)))
+for ep in range(10):
+    perm=list(range(rand_size))
+    random.shuffle(perm)
     for j in perm:
         x=data[j]
         min=float('inf')
@@ -53,7 +57,7 @@ for ep in range(100):
                     minl=l
         for k in range(w_size):
             for l in range(w_size):
-                wadd=[omega1(mink,minl,k,l,x)*alpha*(xi-wi) for xi,wi in zip(x,w[k][l])]
+                wadd=[omega1(mink,minl,k,l,lamb)*alpha*(xi-wi) for xi,wi in zip(x,w[k][l])]
                 for i in range(3):
                     w[k][l][i]+=wadd[i]
     alpha=alpha-0.001;
