@@ -103,7 +103,7 @@ for ep in range(num_ep):
             adj[-1]+=dist(w_snapshot[k][l],w[k][l])
     adj[-1]/=num_ep
     #print(mins[-1])
-s
+
 
 ### GRAPHS ###
 
