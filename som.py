@@ -1,13 +1,15 @@
 import random as rr
 import scipy.io
 import math
+import copy as copyimport
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from pylab import *
 from mpl_toolkits.mplot3d import Axes3D
 
 alpha=0.12
-lamb=5
+lambi=5
+lambf=0.4
 
 w_size=10
 rand_size=100
@@ -17,35 +19,7 @@ w=[]
 w_react=[]
 data=[]
 mins=[]
-
-def react():
-    for k in range(w_size):
-        for l in range(w_size):
-            min=float('inf')
-            ws=w[k][l]
-            pos=0
-            for x in data:
-                if dist(ws,x)<min:
-                    min=dist(ws,x)
-                    pos=int(x[4])-1
-            w_react[k][l][pos]=1.0
-
-def randlist(n):
-    for i in range(0,n):
-        data.append([])
-        data[-1].append(rr.random())
-        data[-1].append(rr.random())
-        data[-1].append(rr.random())
-        #data[-1].append(random.randint(0,2))
-
-def matlist():
-    test=scipy.io.loadmat('SOM_data.mat')
-    rand_size=test['data'][0].size
-    for i in range(test['data'][0].size):
-        data.append([])
-        data[-1].append(test['data'][0][i])
-        data[-1].append(test['data'][1][i])
-        data[-1].append(test['data'][2][i])
+adj=[]
 
 def irislist():
     with open("iris.dat") as f:
@@ -59,10 +33,9 @@ def randnet(n):
         for j in range(n):
             v=[]
             for k in range(4):
-                v.append(rr.random()*10-5)
+                v.append(rr.random()*8-5)
             w[-1].append(v)
             w_react[-1].append([0.0]*3)
-
 
 def dist(p1,p2):
     sum=0.0
@@ -76,17 +49,34 @@ def omega1(k1,l1,k2,l2,lamb):
 def omega2(k1,l1,k2,l2,lamb):
     return math.exp(-1.0*(pow((k1 - k2),2)+pow((l1 - l2),2))/(lamb*lamb))
 
+def react():
+    for k in range(w_size):
+        for l in range(w_size):
+            min=float('inf')
+            ws=w[k][l]
+            pos=0
+            for x in data:
+                d=dist(ws,x)
+                if d<min:
+                    min=d
+                    pos=int(x[4])-1
+            w_react[k][l][pos]=1.0
+
+
+### MAIN ALGORITHM ###
+
+
 #matlist()
 #randlist(rand_size)
 irislist()
 randnet(w_size)
-lambi=5
-lambf=0.4
 lamb=lambi
 for ep in range(num_ep):
     mins.append(0.0)
+    adj.append(0.0)
     perm=list(range(rand_size))
     rr.shuffle(perm)
+    w_snapshot=copyimport.deepcopy(w)
     for j in perm:
         x=data[j]
         min=float('inf')
@@ -95,21 +85,31 @@ for ep in range(num_ep):
         for k in range(w_size):
             for l in range(w_size):
                 ws=w[k][l]
-                if dist(ws,x)<min:
-                    min=dist(ws,x)
+                d=dist(ws,x)
+                if d<min:
+                    min=d
                     mink=k
                     minl=l
         mins[-1]+=min
-        winner=list(w[mink][minl])
         for k in range(w_size):
             for l in range(w_size):
-                wadd=[]
                 omg=omega2(mink,minl,k,l,lamb)
                 for i in range(len(w[k][l])):
                     w[k][l][i]+=omg*alpha*(x[i]-w[k][l][i])
     lamb=lambi*(lambf/lambi)**(ep/num_ep)
-    #print(lamb)
+    mins[-1]/=num_ep
+    for k in range(w_size):
+        for l in range(w_size):
+            adj[-1]+=dist(w_snapshot[k][l],w[k][l])
+    adj[-1]/=num_ep
     #print(mins[-1])
+s
+
+### GRAPHS ###
+
+
+#ATTRIBUTE VALUES#
+
 a=[]
 a_min=[float('inf')]*len(w[0][0])
 a_max=[float('-inf')]*len(w[0][0])
@@ -123,18 +123,28 @@ for i in range(len(w[k][l])):
                 a_max[i]=w[k][l][i]
             if (w[k][l][i]<a_min[i]):
                 a_min[i]=w[k][l][i]
-#print(a[0])
 for i in range(len(w[k][l])):
     figure(1)                
     imshow(a[i], cmap='winter',interpolation='nearest', vmin=a_min[i], vmax=a_max[i])
     grid(True)
     plt.show()
+
+# REACT TO CLASSES #
+
 figure(1)
 react()
-print(w_react)
 imshow(w_react,interpolation='nearest')
 grid(True)
 plt.show()
+
+# PLOT MINS #
+
 fig = plt.figure()
 plot(mins)
+plt.show()
+
+# PLOT ADJUSTMENTS #
+
+fig = plt.figure()
+plot(adj)
 plt.show()
