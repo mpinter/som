@@ -7,13 +7,12 @@ import matplotlib.cm as cm
 from pylab import *
 from mpl_toolkits.mplot3d import Axes3D
 
-alpha=0.12
-lambi=5
-lambf=0.4
+alpha=0.16
+lambi=15
+lambf=0.00001
 
-w_size=10
-rand_size=100
-num_ep=25
+w_size=20
+num_ep=300
 
 w=[]
 w_react=[]
@@ -33,7 +32,7 @@ def randnet(n):
         for j in range(n):
             v=[]
             for k in range(4):
-                v.append(rr.random()*8-5)
+                v.append(rr.random()*4)
             w[-1].append(v)
             w_react[-1].append([0.0]*3)
 
@@ -65,16 +64,13 @@ def react():
 
 ### MAIN ALGORITHM ###
 
-
-#matlist()
-#randlist(rand_size)
 irislist()
 randnet(w_size)
 lamb=lambi
 for ep in range(num_ep):
     mins.append(0.0)
     adj.append(0.0)
-    perm=list(range(rand_size))
+    perm=list(range(len(data)))
     rr.shuffle(perm)
     w_snapshot=copyimport.deepcopy(w)
     for j in perm:
